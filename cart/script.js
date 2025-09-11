@@ -1,44 +1,73 @@
-// Example Cart Items
-const cartItems = [
-  { name: "Pizza", price: 250 },
-  { name: "Burger", price: 150 },
-  { name: "Pasta", price: 200 },
-];
+function getCart() {
+  return JSON.parse(localStorage.getItem("myCart_v1") || "[]");
+}
 
-const cartList = document.getElementById("cart-items");
-const cartTotal = document.getElementById("cart-total");
-let total = 0;
+function renderCart() {
+  const cart = getCart();
+  const container = document.getElementById("cart-items");
+  const totalEl = document.getElementById("cart-total");
 
-// Display items in cart
-cartItems.forEach((item) => {
-  const li = document.createElement("li");
-  li.textContent = `${item.name} - ₹${item.price}`;
-  cartList.appendChild(li);
-  total += item.price;
-});
+  if (cart.length === 0) {
+    container.innerHTML = "<p>Your cart is empty.</p>";
+    totalEl.textContent = "0";
+    return;
+  }
 
-cartTotal.textContent = total;
+  let total = 0;
+  container.innerHTML = cart
+    .map((item, i) => {
+      total += item.price * item.qty;
+      return `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.title}" width="50"/>
+          <span>${item.title}</span>
+          <span>Qty: ${item.qty}</span>
+          <span>₹${(item.price * item.qty).toFixed(2)}</span>
+          <button onclick="removeItem(${i})">Remove</button>
+        </div>`;
+    })
+    .join("");
 
-// Razorpay Checkout
-document.getElementById("checkout-btn").addEventListener("click", function () {
+  totalEl.textContent = total.toFixed(2);
+}
+
+function removeItem(index) {
+  const cart = getCart();
+  cart.splice(index, 1);
+  localStorage.setItem("myCart_v1", JSON.stringify(cart));
+  renderCart();
+}
+
+// Razorpay checkout (demo mode)
+document.getElementById("checkout-btn").addEventListener("click", () => {
+  const total = parseFloat(document.getElementById("cart-total").textContent);
+  if (total <= 0) {
+    alert("Your cart is empty!");
+    return;
+  }
+
   var options = {
-    key: "rzp_test_1234567890", // replace with your Razorpay Key
-    amount: total * 100, // Amount in paise
+    key: "rzp_test_xxxxxxx", // replace with your Razorpay test key
+    amount: total * 100, // amount in paise
     currency: "INR",
-    name: "My Restaurant",
-    description: "Test Transaction",
+    name: "My Shop",
+    description: "Checkout",
     handler: function (response) {
-      alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
+      alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+      localStorage.removeItem("myCart_v1");
+      renderCart();
     },
     prefill: {
-      name: "Swathi",
-      email: "swathi@example.com",
-      contact: "9999999999",
+      name: "Customer Name",
+      email: "customer@example.com",
     },
     theme: {
-      color: "#2d89ef",
+      color: "#3399cc",
     },
   };
-  var rzp = new Razorpay(options);
+
+  const rzp = new Razorpay(options);
   rzp.open();
 });
+
+renderCart();

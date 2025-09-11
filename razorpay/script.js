@@ -1,28 +1,29 @@
 document.getElementById("rzp-button1").onclick = function (e) {
+  e.preventDefault();
+
   var options = {
-    key: "rzp_test_yourkeyhere", // Replace with your Razorpay Test/Live Key
-    amount: 50000, // Amount in paise (50000 = ₹500)
+    key: "<API_KEY>", // 🔑 Replace with your Razorpay Test Key ID
+    amount: 300 * 100, // Amount in paise (₹300)
     currency: "INR",
-    name: "My Shop",
-    description: "Test Transaction",
-    image: "https://yourlogo.com/logo.png", // Optional logo
-    handler: function (response) {
-      alert("Payment Successful! Payment ID: " + response.razorpay_payment_id);
-    },
-    prefill: {
-      name: "Swathi",
-      email: "swathi@example.com",
-      contact: "9999999999",
-    },
-    notes: {
-      address: "My Shop Corporate Office",
-    },
+    name: "MyShop Checkout",
+    description: "This is your order",
+    image:
+      "https://www.mintformations.co.uk/blog/wp-content/uploads/2020/05/shutterstock_583717939.jpg",
     theme: {
-      color: "#3399cc",
+      color: "#000",
+    },
+    handler: function (response) {
+      // ✅ Payment success callback
+      alert("✅ Payment Successful!\nPayment ID: " + response.razorpay_payment_id);
+
+      // ✅ Clear cart from localStorage
+      localStorage.removeItem("myCart_v1");
+
+      // Optional: redirect to success page
+      // window.location.href = "success.html";
     },
   };
 
-  var rzp1 = new Razorpay(options);
-  rzp1.open();
-  e.preventDefault();
+  var rzpy1 = new Razorpay(options);
+  rzpy1.open();
 };

@@ -1,89 +1,88 @@
-const productsContainer = document.getElementById("products");
-const searchInput = document.getElementById("search");
-const categoryFilter = document.getElementById("categoryFilter");
-const sortFilter = document.getElementById("sortFilter");
+// Sample product data
+const products = {
+  mens: [
+    {
+      id: 1,
+      name: "Striped T-Shirt",
+      price: 25,
+      sizes: ["S", "M", "L"],
+      colors: ["#000", "#4938af", "#203d3e"],
+      image: "tshirt.png",
+      rating: 4,
+    },
+    {
+      id: 2,
+      name: "Formal Shirt",
+      price: 40,
+      sizes: ["M", "L", "XL"],
+      colors: ["#000", "#fff"],
+      image: "tshirt.png",
+      rating: 5,
+    },
+  ],
+  womens: [
+    {
+      id: 3,
+      name: "Casual Top",
+      price: 30,
+      sizes: ["S", "M"],
+      colors: ["#ff0000", "#00ff00"],
+      image: "tshirt.png",
+      rating: 3,
+    },
+    {
+      id: 4,
+      name: "Summer Dress",
+      price: 60,
+      sizes: ["M", "L"],
+      colors: ["#0000ff", "#ff69b4"],
+      image: "tshirt.png",
+      rating: 5,
+    },
+  ],
+};
 
-let myProducts = [];
-let myCartIDs = JSON.parse(localStorage.getItem("cart")) || [];
-
-// Fetch products from FakeStore API
-async function fetchProducts() {
-  try {
-    const res = await fetch("https://fakestoreapi.com/products");
-    myProducts = await res.json();
-    displayProducts(myProducts);
-  } catch (err) {
-    console.error("Error fetching products:", err);
-  }
-}
-
-// Display products
-function displayProducts(products) {
-  productsContainer.innerHTML = "";
-
-  if (products.length === 0) {
-    productsContainer.innerHTML = "<p>No products found</p>";
-    return;
-  }
-
-  products.forEach((item) => {
-    const card = document.createElement("div");
-    card.classList.add("product-card");
-
-    card.innerHTML = `
-      <img src="${item.image}" alt="${item.title}" />
-      <h4>${item.title}</h4>
-      <p>₹${item.price}</p>
-      <button onclick="addToCart(${item.id})">Add to Cart</button>
+// Render products
+function renderProducts(section, items) {
+  const container = document.getElementById(section);
+  container.innerHTML = "";
+  items.forEach((p) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <img src="${p.image}" alt="${p.name}" />
+      <div class="info">
+        <div class="row">
+          <div class="price">$${p.price}</div>
+          <div class="sized">${p.sizes.join(",")}</div>
+        </div>
+        <div class="colors">
+          Colors:
+          <div class="row">
+            ${p.colors.map((c) => `<div class="circle" style="background:${c}"></div>`).join("")}
+          </div>
+        </div>
+        <div class="row">Rating: ${"⭐".repeat(p.rating)}</div>
+      </div>
+      <button onclick="addToCart(${p.id})">Add to Cart</button>
     `;
-
-    productsContainer.appendChild(card);
+    container.appendChild(div);
   });
 }
 
-// Add to cart
+// Add to Cart
 function addToCart(id) {
-  if (!myCartIDs.includes(id)) {
-    myCartIDs.push(id);
-    localStorage.setItem("cart", JSON.stringify(myCartIDs));
-    alert("Added to cart!");
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  // avoid duplicates
+  if (!cart.includes(id)) {
+    cart.push(id);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("Item added to cart!");
   } else {
-    alert("Already in cart");
+    alert("Item already in cart!");
   }
 }
 
-// Search functionality
-searchInput.addEventListener("input", () => {
-  let value = searchInput.value.toLowerCase();
-  let filtered = myProducts.filter((item) =>
-    item.title.toLowerCase().includes(value)
-  );
-  displayProducts(filtered);
-});
-
-// Category filter
-categoryFilter.addEventListener("change", () => {
-  let value = categoryFilter.value;
-  let filtered =
-    value === "all"
-      ? myProducts
-      : myProducts.filter((item) => item.category === value);
-  displayProducts(filtered);
-});
-
-// Sorting
-sortFilter.addEventListener("change", () => {
-  let value = sortFilter.value;
-  let sorted = [...myProducts];
-
-  if (value === "asc") {
-    sorted.sort((a, b) => a.price - b.price);
-  } else if (value === "desc") {
-    sorted.sort((a, b) => b.price - a.price);
-  }
-
-  displayProducts(sorted);
-});
-
-// Initialize
-fetchProducts();
+// Init
+renderProducts("mens", products.mens);
+renderProducts("womens", products.womens);
